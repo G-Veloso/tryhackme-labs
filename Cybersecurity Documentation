@@ -1,0 +1,19 @@
+# Tryhackme-labs
+
+# TryHackMe Labs – Cybersecurity Documentation
+
+This repository contains documented cybersecurity labs completed on TryHackMe.
+
+The goal of this repository is to demonstrate practical understanding of
+core cybersecurity concepts and their real-world relevance.
+
+## Structure
+- Networking
+- Linux
+- Web Security
+- SOC / Blue Team
+
+Each folder contains concise documentation focused on:
+- Security relevance
+- Common risks and misconfigurations
+- How the topic appears in real environments
