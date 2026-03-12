@@ -1,65 +1,63 @@
 # Address Resolution Protocol (ARP) | Technical Documentation
 
-##  Overview
-The **Address Resolution Protocol (ARP)** is a fundamental Layer 2 protocol used to map a dynamic **IP address** (Network Layer) to a physical **MAC address** (Data Link Layer). 
+## Overview
+The **Address Resolution Protocol (ARP)** is a fundamental protocol used in local networks to map an **IP address (Layer 3)** to a **MAC address (Layer 2)**.
 
-In an Ethernet network, devices use IP addresses to identify each other logically, but the actual delivery of data frames requires the hardware address of the network interface card (NIC).
+In an Ethernet network, devices identify each other logically using IP addresses. However, the actual delivery of data happens using Ethernet frames, and those frames require the MAC address of the destination network interface card (NIC).
 
----
+Because of that, when a device wants to send data to another device inside the same network, it needs a way to discover:
+> *"Which MAC address corresponds to this IP address?"*
 
-##  Operational Workflow (The 4 Steps)
-
-ARP operates through a simple request-and-response mechanism:
-
-1.  **ARP Cache Lookup**: Before sending data, the host checks its internal `ARP Cache` table. If the mapping exists, it skips to step 4.
-2.  **ARP Request (Broadcast)**: If the MAC is unknown, the host sends a broadcast frame to `FF:FF:FF:FF:FF:FF`.
-    * *Message:* "Who has IP `192.168.1.5`? Tell `192.168.1.2`."
-3.  **ARP Reply (Unicast)**: The device with the target IP responds directly to the requester.
-    * *Message:* "I am `192.168.1.5`, and my MAC is `AA:BB:CC:DD:EE:FF`."
-4.  **Cache Update**: The requester stores the mapping in its cache and proceeds to encapsulate the IP packet into an Ethernet frame.
+That discovery process is handled by ARP. In simple terms, ARP acts like a translation mechanism between IP addresses and physical hardware addresses inside a LAN.
 
 ---
 
-##  Network Boundaries
-* **Local Scope**: ARP is a non-routable protocol. It only works within a single broadcast domain (LAN).
-* **Gateway Interaction**: To reach a destination outside the local network, a host performs an ARP request for its **Default Gateway** (the router), not the final destination IP.
+## Operational Workflow (How ARP Works)
+ARP uses a simple request–reply process to resolve addresses. The process normally follows four steps:
+
+###  ARP Cache Lookup
+Before sending any request to the network, the host checks its **ARP cache**. This is a temporary table stored by the operating system that keeps recently discovered mappings. If the mapping exists, the host sends the frame immediately without a new request.
+
+###  ARP Request (Broadcast)
+If the MAC address is not found in the cache, the host sends an **ARP Request**. This request is broadcast to the entire network using the Ethernet broadcast address:
+`FF:FF:FF:FF:FF:FF`
+
+**The message essentially asks:**
+* *"Who has IP 192.168.1.5? Tell 192.168.1.2"*
+
+Because this is a broadcast frame, every device in the same local network receives the request.
+
+###  ARP Reply (Unicast)
+The device that owns the requested IP recognizes the request and sends an **ARP Reply** directly back to the requester (**unicast communication**).
+* *Example:* "I am 192.168.1.5, and my MAC address is AA:BB:CC:DD:EE:FF"
+
+###  Cache Update
+After receiving the reply, the host stores the mapping inside its ARP cache. Once the mapping exists, the host encapsulates the IP packet into an Ethernet frame and sends it to the correct destination.
 
 ---
 
-##  Security & SOC Perspective
-Since ARP lacks native authentication, it is vulnerable to several Layer 2 attacks:
-
-* **ARP Spoofing / Poisoning**: An attacker sends falsified ARP messages to link their MAC address with the IP address of a legitimate server or gateway.
-* **Man-in-the-Middle (MitM)**: Attackers intercept traffic between two hosts to steal credentials or sensitive data.
-* **Mitigation**:
-    * **DAI (Dynamic ARP Inspection)**: Validates ARP packets on switches.
-    * **Static ARP**: Manual mapping for high-security servers.
+## Network Boundaries
+ARP operates **only** within a local network (LAN). Broadcast traffic does not pass through routers.
+* **External Communication:** If a host needs to talk to a device outside its network, it does not perform ARP for the remote IP. Instead, it resolves the MAC address of the **Default Gateway (router)**.
+* **The Process:** The host sends the frame to the router, which then forwards the packet toward the final destination network.
 
 ---
 
-##  Hands-on Commands
+## Security & SOC Perspective
+From a security perspective, ARP has a critical limitation: **it lacks authentication**. Most systems accept ARP replies without verification, making the network vulnerable to Layer 2 attacks:
 
-### Checking and Managing ARP Table
+* **ARP Spoofing / Poisoning:** An attacker sends fake ARP responses associating their own MAC address with a legitimate IP (often the gateway).
+* **Man-in-the-Middle (MitM):** By poisoning the cache, an attacker can intercept, monitor, or manipulate traffic between two hosts without being noticed.
 
+### Mitigation Techniques
+* **Dynamic ARP Inspection (DAI):** Switches validate ARP packets by comparing them with trusted DHCP information.
+* **Static ARP Entries:** For critical infrastructure, administrators manually configure fixed IP–MAC mappings.
+
+---
+
+## Hands-on Commands
+
+### Checking the ARP Table
+To view the ARP cache on most systems:
 ```bash
-Display the ARP cache table
-
 arp -a
-
-Delete a specific entry (Troubleshooting)
-
-arp -d 192.168.1.1
-
-Add a static entry (Security)
-
- Windows:
-arp -s <IP_Address> <MAC_Address>
-
- Linux:
-ip neigh add <IP_Address> lladdr <MAC_Address> dev <interface>
-
-Packet Analysis (Wireshark Filters)
-
-arp                # Show all ARP traffic
-arp.opcode == 1    # Filter by ARP Requests
-arp.opcode == 2    # Filter by ARP Replies
