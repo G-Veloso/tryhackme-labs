@@ -68,7 +68,7 @@ The following indicators have been extracted to update the SIEM's correlation ru
 ---
 
 ## 🛠️ Security Recommendations (Architecture Level)
-Based on this investigation, the following architectural controls are recommended for implementation at **C6 Bank** (or similar financial/tech environments):
+Based on this investigation, the following architectural controls are recommended for implementation in large-scale financial and enterprise infrastructure environments:
 
 1. **DLP Policy Enforcement:** Implement content-aware Data Loss Prevention to block outgoing SMTP traffic containing keywords such as "patent" or scientific nomenclature (e.g., *Saccharomyces*).
 2. **Behavioral Anomalies:** Configure SIEM alerts for "Sequence of Events": *Access to Competitor Domain* -> *Followed by* -> *External SMTP Transmission*.
