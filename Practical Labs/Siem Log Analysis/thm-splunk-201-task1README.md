@@ -1,7 +1,7 @@
 # Forensic Investigation: Insider Threat & Data Exfiltration Analysis
 **Platform:** Splunk Enterprise (SIEM)  
 **Dataset:** BOTS v2  
-**Case ID:** 2026-INT-0423  
+**Case ID:** 2026-INT-423  
 **Status:** Closed - Malicious Intent Confirmed  
 
 ---
